@@ -8,7 +8,7 @@ Installation
 
 You can install MF_Autoloader in two ways:
 
-* Via pear:
+Via pear:
 
     stuart@ubuntu:~$ sudo pear channel-discover pear.methodosity.com 
     Adding Channel "pear.methodosity.com" succeeded
@@ -20,7 +20,7 @@ You can install MF_Autoloader in two ways:
     ....done: 1,973 bytes
     install ok: channel://pear.methodosity.com/MF_Autoloader-0.0.3
 
-* Manually:
+From source:
 
     git clone git@github.com:stuartherbert/MF_Autoloader.git
     cd MF_Autoloader
