@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- build file for phing -->
+<project name="MF_Bootstrap" default="help" basedir=".">
+  <!-- Human-readable info about our component -->
+  <property name="project.name"      value="MF_Bootstrap" />
+  <property name="project.version"   value="1.0.0" />
+  
+  <!-- Paths to the directories that we work with -->
+  <property name="project.reviewdir" value="${project.basedir}/review" override="true" />
+  <property name="project.logsdir"   value="${project.reviewdir}/logs" override="true" />
+  <property name="project.srcdir"    value="${project.basedir}/src"    override="true" />
+  <property name="project.testsdir"  value="${project.basedir}/tests"  override="true" />
+  <property name="project.builddir"  value="${project.basedir}/build"  override="true" />
+  <property name="project.pkgdir"  value="${project.builddir}/${project.name}-${project.version}"  override="true" />
+  <property name="project.tarfile"   value="${project.builddir}/${project.name}-${project.version}.tar.gz" />
+
+  <!-- Paths to the directories that we install into -->
+  <property name="prefix"          value="/usr/share"          override="true" />
+  <property name="prefix.codedir"  value="${prefix}/php"       override="true" />
+  <property name="prefix.docsdir"  value="${prefix}/php-docs"  override="true" />
+  <property name="prefix.testsdir" value="${prefix}/php-tests" override="true" />
+
+  <fileset dir="${project.srcdir}" id="srcfiles">
+    <include name="*"/>
+  </fileset>
+
+  <fileset dir="${project.testsdir}" id="testfiles">
+    <include name="*"/>
+  </fileset>
+  
+  <!-- Include Travis' phing ext for creating package.xml files -->
+  <taskdef classname="phing.tasks.ext.d51PearPkg2Task" name="d51pearpkg2" />
+
+  <!-- Tell the user what this build file supports -->
+  <target name="help">
+    <echo message="${project.name} ${project.version}: build.xml targets:" />
+    <echo message="" />
+    <echo message="test" />
+    <echo message="  Run the package's PHPUnit tests" />
+    <echo message="code-review" />
+    <echo message="  Run code quality tests (pdepend, phpmd, phpcpd, phpcs)" />
+    <echo message="pear-package" />
+    <echo message="  Create a PEAR-compatible package" />
+    <echo message="phar" />
+    <echo message="  Create a .phar file suitable for redistribution" />
+    <echo message="install.all" />
+    <echo message="  Install the PHP code, tests and docs onto the system" />
+    <echo message="  You must be 'root' to run this target!!" />
+    <echo message="install.code" />
+    <echo message="  Install just the PHP code onto the system" />
+    <echo message="  You must be 'root' to run this target!!" />
+    <echo message="install.docs" />
+    <echo message="  Install just the package's documentation onto the system" />
+    <echo message="  You must be 'root' to run this target!!" />
+    <echo message="install.tests" />
+    <echo message="  Install just the package's tests onto the system" />
+    <echo message="  You must be 'root' to run this target!!" />
+    <echo message="uninstall" />
+    <echo message="  Uninstall the package from the system" />
+  </target>
+
+  <!-- Run the unit tests for this module -->
+  <target name="test">
+    <delete dir="${project.reviewdir}/code-coverage" />
+    <mkdir dir="${project.reviewdir}/code-coverage" />
+    <exec command="phpunit --bootstrap=bootstrap.php --coverage-html ${project.reviewdir}/code-coverage ${project.testsdir}" />
+  </target>
+
+  <!-- Create the PEAR package, ready for release -->
+  <target name="build">
+    <echo>Building release directory</echo>
+    <delete dir="${project.pkgdir}" />
+    <mkdir dir="${project.pkgdir}" />
+    <copy todir="${project.pkgdir}">
+      <fileset refid="srcfiles"/>
+    </copy>
+    <d51pearpkg2 dir="${project.pkgdir}" baseinstalldir="/">
+      <name>MF_Bootstrap</name>
+      <summary>Generic autoloader</summary>
+      <channel>pear.domain51.com</channel>
+      <description>
+        <!--        Don't exceed this width         -->
+        This package provides a generic class
+        autoloader. It is designed for the MF world,
+        but can also be used by other frameworks.
+      </description>
+
+      <notes>See http://framework.methodosity.com for more details.</notes>
+
+      <lead user="stuherbert" name="Stuart Herbert" email="stuart@stuartherbert.com" />
+      <license>New-BSD</license>
+
+      <version release="${project.version}" api="1.0" />
+      <stability release="alpha" api="alpha" />
+      
+      <dependencies>
+        <php minimum_version="5.3.0" />
+        <pear minimum_version="1.6.0" />
+      </dependencies>
+
+      <changelog version="1.0.0" date="2010-09-30" license="New-BSD">
+        <!--        Don't exceed this width         -->
+        Initial release of package
+      </changelog>
+    </d51pearpkg2>
+  </target>
+  
+  <target name="pear-package" depends="build">
+    <echo>Creating ${project.tarfile} PEAR package</echo>
+
+    <delete file="${project.tarfile}" />
+    <tar destfile="${project.tarfile}" compression="gzip">
+      <fileset dir="${project.builddir}">
+        <include name="${project.name}-${project.version}/**" />
+      </fileset>
+    </tar>
+    <echo>Your PEAR package is in ${project.tarfile}</echo>
+  </target>
+
+  <!-- Create the PHAR file, ready for release -->
+  <target name="phar" depends="build">
+
+  </target>
+  <!-- Run the code review quality tests -->
+  <target name="code-review" depends="pdepend, phpmd, phpcpd, phpcs" />
+
+  <target name="pdepend">
+    <mkdir dir="${project.reviewdir}/logs" />
+    <mkdir dir="${project.reviewdir}/pdepend" />
+    <exec command="pdepend --jdepend-xml=${project.reviewdir}/logs/jdepend.xml --jdepend-chart=${project.reviewdir}/pdepend/dependencies.svg --overview-pyramid=${project.reviewdir}/pdepend/overview-pyramid.svg ${project.srcdir}" />
+  </target>
+
+  <!-- Generate package docs -->
+  <target name="phpdoc">
+    <delete dir="${project.reviewdir}/docs" />
+    <mkdir dir="${project.reviewdir}/docs" />
+    <exec command="phpdoc -d ${project.srcdir} -t ${project.reviewdir}/docs/ "/>
+  </target>
+
+  <!-- Check code for code smells -->
+  <target name="phpmd">
+    <mkdir dir="${project.reviewdir}/logs" />
+    <exec command="phpmd ${project.srcdir} xml codesize,design,naming,unusedcode --reportfile=${project.reviewdir}/logs/pmd.xml" />
+  </target>
+
+  <target name="phpcpd">
+    <exec command="phpcpd --log-pmd ${project.reviewdir}/logs/pmd-cpd.xml ${project.srcdir}" />
+  </target>
+
+  <!-- Check the code for style violations -->
+  <target name="phpcs">
+    <exec command="phpcs --report=checkstyle --report-file=${project.reviewdir}/logs/checkstyle.xml --standard=Sebastian --extensions=php ${project.srcdir}" />
+  </target>
+
+  <!-- Build the code-browser files -->
+  <target name="phpcb">
+    <delete dir="${project.reviewdir}/code-browser" />
+    <mkdir dir="${project.reviewdir}/code-browser" />
+    <exec command="phpcb --log ${project.reviewdir}/logs/ --source ${project.srcdir} --output ${project.reviewdir}/code-browser" />
+  </target>
+
+  <!-- Install the code -->
+  <target name="install.code">
+    <copy todir="${prefix.codedir}">
+      <fileset refid="srcfiles"/>
+    </copy>
+  </target>
+
+  <!-- Install the docs -->
+  <target name="install.docs">
+  </target>
+
+  <!-- Install the tests -->
+  <target name="install.tests">
+
+  </target>
+</project>
