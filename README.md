@@ -14,7 +14,7 @@ Via pear:
     Adding Channel "pear.methodosity.com" succeeded
     Discovery of channel "pear.methodosity.com" succeeded
 
-    stuart@ubuntu:~$ sudo pear install MF/MF_Autoloader-alpha
+    stuart@ubuntu:~$ sudo pear install MF/MF_Autoloader
     downloading MF_Autoloader-0.0.3.tgz ...
     Starting to download MF_Autoloader-0.0.3.tgz (1,973 bytes)
     ....done: 1,973 bytes
@@ -72,7 +72,7 @@ This component includes a build.xml file containing several options to make life
          [echo] MF_Autoloader 0.0.3: build.xml targets:
          [echo] 
          [echo] test
-         [echo]   Run the package's PHPUnit tests
+         [echo]   Run the component's PHPUnit tests
          [echo] code-review
          [echo]   Run code quality tests (pdepend, phpmd, phpcpd, phpcs)
          [echo] pear-package
@@ -92,7 +92,7 @@ This component includes a build.xml file containing several options to make life
 License
 -------
 
-This component is released under the new-style BSD license.
+**This component is released under the new-style BSD license.**
 
 Copyright (c) 2010, Stuart Herbert
 All rights reserved.
