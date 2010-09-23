@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- build file for phing -->
-<project name="MF_Bootstrap" default="help" basedir=".">
+<project name="MF_Autoloader" default="help" basedir=".">
   <!-- Human-readable info about our component -->
-  <property name="project.name"      value="MF_Bootstrap" />
-  <property name="project.version"   value="1.0.0" />
+  <property name="project.name"      value="MF_Autoloader" />
+  <property name="project.version"   value="0.0.1" />
   
   <!-- Paths to the directories that we work with -->
   <property name="project.reviewdir" value="${project.basedir}/review" override="true" />
@@ -63,7 +63,9 @@
   <target name="test">
     <delete dir="${project.reviewdir}/code-coverage" />
     <mkdir dir="${project.reviewdir}/code-coverage" />
-    <exec command="phpunit --bootstrap=bootstrap.php --coverage-html ${project.reviewdir}/code-coverage ${project.testsdir}" />
+    <exec command="phpunit --bootstrap=${project.testsdir}/bootstrap.php --coverage-html ${project.reviewdir}/code-coverage ${project.testsdir}" checkreturn="true" logoutput="true"/>
+    <echo/>
+    <echo>The code coverage report is in ${project.reviewdir}/code-coverage</echo>
   </target>
 
   <!-- Create the PEAR package, ready for release -->
@@ -75,7 +77,7 @@
       <fileset refid="srcfiles"/>
     </copy>
     <d51pearpkg2 dir="${project.pkgdir}" baseinstalldir="/">
-      <name>MF_Bootstrap</name>
+      <name>${project.name}</name>
       <summary>Generic autoloader</summary>
       <channel>pear.domain51.com</channel>
       <description>

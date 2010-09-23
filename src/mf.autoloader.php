@@ -77,7 +77,7 @@ function __mf_include($filename)
 
         foreach ($pathToSearch as $searchPath)
         {
-                $fileToLoad = $pathToSearch . '/' . $filename;
+                $fileToLoad = $searchPath . '/' . $filename;
                 if (!file_exists($fileToLoad))
                 {
                         $failedFiles[] = $fileToLoad;
