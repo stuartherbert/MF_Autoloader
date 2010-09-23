@@ -18,7 +18,7 @@ if (!defined('APP_TOPDIR'))
 
 if (!defined('APP_LIBDIR'))
 {
-        define('APP_LIBDIR', APP_TOPDIR . '/library');
+        define('APP_LIBDIR', APP_TOPDIR . '/libraries');
 }
 
 // push APP_LIBDIR to the front of PHP's include path, so that we can
@@ -69,7 +69,14 @@ function __mf_autoload($classname)
 
 function __mf_include($filename)
 {
-        $pathToSearch = explode(PATH_SEPARATOR, get_include_path());
+	if (defined('SEARCH_APP_LIBDIR_ONLY'))
+	{
+		$pathToSearch = array(APP_LIBDIR);
+	}
+	else
+	{
+        	$pathToSearch = explode(PATH_SEPARATOR, get_include_path());
+	}
 
         // keep track of what we have tried; this info may help other
         // devs debug their code
