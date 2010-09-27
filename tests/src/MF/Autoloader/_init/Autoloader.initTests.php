@@ -1,0 +1,3 @@
+<?php
+
+define('AUTOLOADER_INITTESTS_SUCCESS', 1);

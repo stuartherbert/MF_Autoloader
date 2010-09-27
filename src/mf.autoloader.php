@@ -44,7 +44,7 @@ function __mf_init_namespace($namespace, $fileExt = '.init.php')
 
         $path = __mf_normalise_path($namespace);
         $filename = $path . '/_init/' . end(explode('/', $path)) . $fileExt;
-        $loadedModules[$module] = $filename;
+        $loadedModules[$namespace] = $filename;
 
         __mf_include($filename);
 }

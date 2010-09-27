@@ -3,7 +3,7 @@
 <project name="MF_Autoloader" default="help" basedir=".">
   <!-- Human-readable info about our component -->
   <property name="project.name"      value="MF_Autoloader" />
-  <property name="project.version"   value="1.0.0" />
+  <property name="project.version"   value="1.0.1" />
   
   <!-- Paths to the directories that we work with -->
   <property name="project.srcdir"    value="${project.basedir}/src"    override="true" />
@@ -126,6 +126,11 @@
         <pear minimum_version="1.6.0" />
       </dependencies>
 
+      <changelog version="1.0.1" date="2010-09-27" license="New-BSD">
+        <!--        Don't exceed this width         -->
+        Fixed __mf_init_namespace() not working at all.
+        Added tests for __mf_init_namespace() and __mf_init_tests().
+      </changelog>
       <changelog version="1.0.0" date="2010-09-24" license="New-BSD">
         <!--        Don't exceed this width         -->
         Initial release of package
