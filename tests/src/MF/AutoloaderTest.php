@@ -1,7 +1,7 @@
 <?php
 
-__mf_init_namespace('\\MF\\Autoloader');
-__mf_init_tests('\\MF\\Autoloader');
+__mf_init_namespace('MF\\Autoloader');
+__mf_init_tests('MF\\Autoloader');
 
 class MF_AutoloaderTest extends PHPUnit_Framework_TestCase
 {
@@ -23,5 +23,12 @@ class MF_AutoloaderTest extends PHPUnit_Framework_TestCase
         {
                 $this->assertTrue(defined('AUTOLOADER_INITTESTS_SUCCESS'));
                 $this->assertEquals(AUTOLOADER_INITTESTS_SUCCESS, 1);
+        }
+
+        public function testCompliesWithPSR0UnderscoreRules()
+        {
+                // if this object loads, the test passes
+                $obj = new MF\Underscore_Test\PSR0_UnderscoreData();
+                $this->assertTrue($obj->isLoaded);
         }
 }

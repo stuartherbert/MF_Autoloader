@@ -26,9 +26,27 @@ if (!defined('APP_LIBDIR'))
 set_include_path(APP_LIBDIR . PATH_SEPARATOR . get_include_path());
 
 // autoloader support
-function __mf_normalise_path($namespaceOrClass)
+
+/**
+ * Implements the normalisation standard from here:
+ * http://groups.google.com/group/php-standards/web/psr-0-final-proposal
+ *
+ * @param <type> $namespaceOrClass
+ * @return <type>
+ */
+function __mf_normalise_classpath($className)
 {
-        return str_replace(array('\\', '_'), '/', $namespaceOrClass);
+        $fileName  = '';
+        $lastNsPos = strripos($className, '\\');
+
+        if ($lastNsPos !== false)
+        {
+                $namespace = substr($className, 0, $lastNsPos);
+                $className = substr($className, $lastNsPos + 1);
+                $fileName  = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+        }
+
+        return $fileName . str_replace('_', DIRECTORY_SEPARATOR, $className);
 }
 
 function __mf_init_namespace($namespace, $fileExt = '.init.php')
@@ -42,9 +60,11 @@ function __mf_init_namespace($namespace, $fileExt = '.init.php')
                 return;
         }
 
-        $path = __mf_normalise_path($namespace);
-        $filename = $path . '/_init/' . end(explode('/', $path)) . $fileExt;
+        $path = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
+        $filename = $path . '/_init/' . end(explode(DIRECTORY_SEPARATOR, $path)) . $fileExt;
         $loadedModules[$namespace] = $filename;
+
+        var_dump($filename);
 
         __mf_include($filename);
 }
@@ -62,7 +82,7 @@ function __mf_autoload($classname)
         }
 
         // convert the classname into a filename on disk
-        $classFile = __mf_normalise_path($classname) . '.php';
+        $classFile = __mf_normalise_classpath($classname) . '.php';
 
         return __mf_include($classFile);
 }
