@@ -1,29 +1,13 @@
 <?php
 
-// ========================================================================
-// Step 1: Setup key global constants
-//
-// ------------------------------------------------------------------------
-
-// APP_TOPDIR must always be defined by the caller.
-//
-// We deliberately do not try to set APP_TOPDIR ourselves.  The caller must
-// define APP_TOPDIR to prove that their PHP script is one that is meant
-// to be accessed deliberately from a web browser.
-
-if (!defined('APP_TOPDIR'))
+// if the user has defined an APP_LIBDIR, push that to the front of the
+// PHP include path
+if (defined('APP_LIBDIR'))
 {
-        throw new Exception('APP_TOPDIR not defined');
+        // push APP_LIBDIR to the front of PHP's include path, so that we can
+        // use PHP's normal require and include functions
+        set_include_path(APP_LIBDIR . PATH_SEPARATOR . get_include_path());
 }
-
-if (!defined('APP_LIBDIR'))
-{
-        define('APP_LIBDIR', APP_TOPDIR . '/libraries');
-}
-
-// push APP_LIBDIR to the front of PHP's include path, so that we can
-// use PHP's normal require and include functions
-set_include_path(APP_LIBDIR . PATH_SEPARATOR . get_include_path());
 
 // autoloader support
 
@@ -49,6 +33,16 @@ function __mf_normalise_classpath($className)
         return $fileName . str_replace('_', DIRECTORY_SEPARATOR, $className);
 }
 
+/**
+ * include a PHP script to bootstrap a namespace
+ *
+ * for example, if you want to bootstrap MF\WebApp, this function would
+ * attempt to include the file MF/WebApp/_init/WebApp.init.php
+ *
+ * @param string $namespace the namespace to bootstrap
+ * @param string $fileExt the suffix of the file to load (default is '.init.php')
+ * @return boolean false if the bootstrap file could not be found
+ */
 function __mf_init_namespace($namespace, $fileExt = '.init.php')
 {
         static $loadedNamespaces = array();
@@ -69,16 +63,36 @@ function __mf_init_namespace($namespace, $fileExt = '.init.php')
         __mf_include($filename);
 }
 
+/**
+ * include a PHP file to bootstrap tests for a namespace
+ *
+ * for example, if you want to bootstrap tests for MF\\WebApp, this
+ * function would include the file MF/WebApp/_init/WebApp.initTests.php
+ *
+ * This is typically used to load shared tests into a unit test script.
+ * It was originally created for MF_Datastore; that is probably the best
+ * place to go and look for examples of how it can be useful
+ *
+ * @param string $namespace the namespace to bootstrap the tests from
+ */
 function __mf_init_tests($namespace)
 {
         __mf_init_namespace($namespace, '.initTests.php');
 }
 
+/**
+ * Autoloader function
+ *
+ * Do not call this function directly. PHP calls it for you.
+ *
+ * @param string $classname
+ * @return boolean false if the class could not be found
+ */
 function __mf_autoload($classname)
 {
         if (class_exists($classname) || interface_exists($classname))
         {
-                return FALSE;
+                return TRUE;
         }
 
         // convert the classname into a filename on disk
@@ -86,6 +100,13 @@ function __mf_autoload($classname)
 
         return __mf_include($classFile);
 }
+
+/**
+ * Internal function used by __mf_autoload()
+ *
+ * @param <type> $filename
+ * @return boolean false if the file to include could not be found
+ */
 
 function __mf_include($filename)
 {
@@ -121,6 +142,5 @@ function __mf_include($filename)
         return FALSE;
 }
 
+// install our autoloader
 spl_autoload_register('__mf_autoload');
-
-?>
