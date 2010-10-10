@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- build file for phing -->
-<project name="MF_Autoloader" default="help" basedir=".">
+<project default="help" basedir=".">
   <!-- Human-readable info about our component -->
-  <property name="project.name"      value="MF_Autoloader" />
-  <property name="project.version"   value="2.0.0" />
-  
+  <property file="build.properties" />
+
+  <property name="project.version"   value="${project.majorVersion}.${project.minorVersion}.${project.patchLevel}" />
+  <property name="project.apiversion" value="${project.majorVersion}.${project.minorVersion}" />
+
   <!-- Paths to the directories that we work with -->
   <property name="project.srcdir"    value="${project.basedir}/src"    override="true" />
   <property name="project.testsdir"  value="${project.basedir}/tests"  override="true" />
@@ -23,10 +25,6 @@
   <fileset dir="${project.srcdir}" id="srcfiles">
     <include name="**/**"/>
   </fileset>
-
-  <!-- Include Travis' phing ext for creating package.xml files -->
-  <!-- get this from pear.domain51.com -->
-  <taskdef classname="phing.tasks.ext.d51PearPkg2Task" name="d51pearpkg2" />
 
   <!-- Tell the user what this build file supports -->
   <target name="help">
@@ -53,15 +51,11 @@
 
   <!-- Run PHP lint on all of the source code -->
   <target name="lint">
-    <foreach param="phpfile" absparam="absphpfile" target="lint-php">
+    <phplint>
       <fileset dir="${project.srcdir}">
         <include name="**/*.php" />
       </fileset>
-    </foreach>
-  </target>
-
-  <target name="lint-php">
-    <exec command="php -l ${absphpfile}" checkreturn="true" logoutput="true" />
+    </phplint>
   </target>
 
   <!-- Run the unit tests for this module -->
@@ -119,46 +113,14 @@
     <copy todir="${project.pkgdir}">
       <fileset refid="srcfiles"/>
     </copy>
-    <d51pearpkg2 dir="${project.pkgdir}" baseinstalldir="/">
-      <name>${project.name}</name>
-      <summary>Generic autoloader</summary>
-      <channel>pear.methodosity.com</channel>
-      <description>
-        <!--        Don't exceed this width         -->
-        This package provides a generic class
-        autoloader. It is designed for the MF world,
-        but can also be used by other frameworks.
-      </description>
+    <copy todir="${project.builddir}">
+      <fileset dir=".">
+        <include name="package.xml" />
+      </fileset>
+    </copy>
 
-      <notes>See http://framework.methodosity.com for more details.</notes>
+    <exec command="php tools/populatepackage.php build.properties ${project.builddir}/package.xml ${project.pkgdir}" />
 
-      <lead user="stuherbert" name="Stuart Herbert" email="stuart@stuartherbert.com" />
-      <license uri="http://www.opensource.org/licenses/bsd-license.php">New-BSD</license>
-
-      <version release="${project.version}" api="1.0" />
-      <stability release="stable" api="stable" />
-      
-      <dependencies>
-        <php minimum_version="5.3.0" />
-        <pear minimum_version="1.6.0" />
-      </dependencies>
-
-      <changelog version="2.0.0" date="2010-10-07" license="New-BSD">
-        <!--        Don't exceed this width         -->
-        Updated to comply with PSR0 autoloading standard,
-        especially how underscores work in namespaces
-      </changelog>
-      <changelog version="1.0.1" date="2010-09-27" license="New-BSD">
-        <!--        Don't exceed this width         -->
-        Fixed __mf_init_namespace() not working at all.
-        Added tests for __mf_init_namespace() and __mf_init_tests().
-      </changelog>
-      <changelog version="1.0.0" date="2010-09-24" license="New-BSD">
-        <!--        Don't exceed this width         -->
-        Initial release of package
-      </changelog>
-    </d51pearpkg2>
-    <move file="${project.pkgdir}/package.xml" tofile="${project.builddir}/package.xml" />
     <echo>Creating ${project.tarfile} PEAR package</echo>
 
     <mkdir dir="${project.distdir}" />
@@ -176,10 +138,10 @@
     <exec command="pear install -f -a ${project.tarfile}" checkreturn="true" logoutput="true" />
   </target>
 
-  <!-- Publish the distribution files for download -->
+  <!-- Tag this release -->
   <target name="git-tag">
-    <exec command="git tag -a 'Release-${project.version}' -m 'Tagged           Release ${project-version}'" checkreturn="true" logoutput="true" />
-    <exec command="git push --tags origin master" checkreturn="true"            logoutput="true" />
+    <exec command="git tag -a 'Release-${project.version}' -m 'Tagged Release ${project-version}'" checkreturn="true" logoutput="true" />
+    <exec command="git push --tags origin master" checkreturn="true" logoutput="true" />
   </target>
 
   <!-- Publish the distribution files for download -->
