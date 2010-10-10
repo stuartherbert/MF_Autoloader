@@ -21,7 +21,7 @@
   <property name="project.tarfile"   value="${project.distdir}/${project.tarfilename}" />
 
   <fileset dir="${project.srcdir}" id="srcfiles">
-    <include name="*"/>
+    <include name="**/**"/>
   </fileset>
 
   <!-- Include Travis' phing ext for creating package.xml files -->
@@ -32,6 +32,8 @@
   <target name="help">
     <echo message="${project.name} ${project.version}: build.xml targets:" />
     <echo message="" />
+    <echo message="lint" />
+    <echo message="  Check the PHP files for syntax errors" />
     <echo message="test" />
     <echo message="  Run the component's PHPUnit tests" />
     <echo message="code-review" />
@@ -49,8 +51,21 @@
     <echo message="  Remove all temporary folders created by this build file" />
   </target>
 
+  <!-- Run PHP lint on all of the source code -->
+  <target name="lint">
+    <foreach param="phpfile" absparam="absphpfile" target="lint-php">
+      <fileset dir="${project.srcdir}">
+        <include name="**/*.php" />
+      </fileset>
+    </foreach>
+  </target>
+
+  <target name="lint-php">
+    <exec command="php -l ${absphpfile}" checkreturn="true" logoutput="true" />
+  </target>
+
   <!-- Run the unit tests for this module -->
-  <target name="test">
+  <target name="test" depends="lint">
     <delete dir="${project.reviewdir}/code-coverage" />
     <mkdir dir="${project.reviewdir}/code-coverage" />
     <exec command="phpunit --bootstrap=${project.testsdir}/bootstrap.php --coverage-html ${project.reviewdir}/code-coverage ${project.testsdir}" checkreturn="true" logoutput="true"/>
@@ -180,3 +195,4 @@
     <delete dir="${project.reviewdir}" />
   </target>
 </project>
+<!-- vim: set tabstop=2 shiftwidth=2 expandtab: -->
